@@ -23,7 +23,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": [
-    "src/amplify/data/resource.ts"
-  ]
+  "include": ["src"]
 }
