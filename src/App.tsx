@@ -1,27 +1,48 @@
-// import { FormEvent, useState } from "react";
-// import { generateRecipe } from "./actions";
-// import { Loader, Placeholder } from "@aws-amplify/ui-react";
+import { FormEvent, useState } from "react";
+import { Loader, Placeholder } from "@aws-amplify/ui-react";
 import "./App.css";
+import { Amplify } from "aws-amplify";
+import { Schema } from "../amplify/data/resource";
+import { generateClient } from "aws-amplify/data";
+import outputs from "../amplify_outputs.json";
+
+
+import "@aws-amplify/ui-react/styles.css";
+
+Amplify.configure(outputs);
+
+const amplifyClient = generateClient<Schema>({
+  authMode: "userPool",
+});
 
 function App() {
-  // const [result, setResult] = useState<string>("");
-  // const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
-  // const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
-  //   event.preventDefault();
-  //   setLoading(true);
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
 
-  //   // try {
-  //   //   const formData = new FormData(event.currentTarget);
-  //   //   const data = await generateRecipe(formData);
-  //   //   const recipe = typeof data === "string" ? data : "No data returned";
-  //   //   setResult(recipe);
-  //   // } catch (e) {
-  //   //   alert(`An error occurred: ${e}`);
-  //   // } finally {
-  //   //   setLoading(false);
-  //   // }
-  // };
+    try {
+      const formData = new FormData(event.currentTarget);
+      
+      const { data, errors } = await amplifyClient.queries.askBedrock({
+        ingredients: [formData.get("ingredients")?.toString() || ""],
+      });
+
+      if (!errors) {
+        setResult(data?.body || "No data returned");
+      } else {
+        console.log(errors);
+      }
+
+  
+    } catch (e) {
+      alert(`An error occurred: ${e}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="app-container">
@@ -37,7 +58,7 @@ function App() {
           demand...
         </p>
       </div>
-      {/* <form onSubmit={onSubmit} className="form-container">
+      <form onSubmit={onSubmit} className="form-container">
         <div className="search-container">
           <input
             type="text"
@@ -63,7 +84,7 @@ function App() {
         ) : (
           result && <p className="result">{result}</p>
         )}
-      </div> */}
+      </div>
     </div>
   );
 }
